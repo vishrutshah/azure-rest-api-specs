@@ -798,6 +798,7 @@
           "description": "Gets or sets the value of custom properties."
         },
         "properties": {
+          "x-ms-client-flatten": true,
           "$ref": "#/definitions/DataLakeStoreAccountProperties",
           "description": "Gets or sets the Data Lake Store account properties."
         }
