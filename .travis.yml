@@ -29,8 +29,8 @@ env:
 before_install:
   # - docker pull lmazuel/swagger-to-sdk
   # - python -c "import os; print('\n'.join(v for v in os.environ.keys() if v.startswith('TRAVIS')))" > /tmp/env_file
-  # - sudo apt-get update
-  # - sudo apt-get install libunwind8 libicu52 -y
+  - sudo apt-get update
+  - sudo apt-get install libunwind8 libicu52 -y
 install:
   - npm install
   - npm install -g autorest
