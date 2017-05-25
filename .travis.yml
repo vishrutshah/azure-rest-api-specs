@@ -5,7 +5,7 @@ services:
   - docker
 env:
   matrix:
-  - MODE=syntax
+  - MODE=syntax PR_ONLY=true
   # - MODE=python
   # - MODE=node
   # - MODE=ruby
