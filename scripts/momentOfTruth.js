@@ -60,22 +60,21 @@ _(swaggersToProcess).each(function (swagger) {
     samerIdea.getLinterResult(swagger).then((result) => {
         console.log(result);
     });
-});
-
-// Checkout the target branch
-try {
-    console.log(`targetBranch = ${targetBranch}`);
-    console.log(execSync(`git checkout ${targetBranch}`, { encoding: 'utf8' }));
-    console.log(execSync('git branch', { encoding: 'utf8' }));
-    console.log(execSync('git log -2', { encoding: 'utf8' }));
-} catch (err) {
-    console.log(`An error occurred while getting the current branch ${util.inspect(err, { depth: null })}.`);
-}
-
-console.log(`>>>>>>>>>>>>>>>>>>Do it again on the target branch files>>>>>>>>>>>>>>>>>>`);
-
-_(swaggersToProcess).each(function (swagger) {
-    samerIdea.getLinterResult(swagger).then((result) => {
-        console.log(result);
+}).then(() => {
+    // Checkout the target branch
+    try {
+        console.log(`targetBranch = ${targetBranch}`);
+        console.log(execSync(`git checkout ${targetBranch}`, { encoding: 'utf8' }));
+        console.log(execSync('git branch', { encoding: 'utf8' }));
+        console.log(execSync('git log -2', { encoding: 'utf8' }));
+    } catch (err) {
+        console.log(`An error occurred while getting the current branch ${util.inspect(err, { depth: null })}.`);
+    }
+}).then(() => {
+    console.log(`>>>>>>>>>>>>>>>>>>Do it again on the target branch files>>>>>>>>>>>>>>>>>>`);
+    _(swaggersToProcess).each(function (swagger) {
+        samerIdea.getLinterResult(swagger).then((result) => {
+            console.log(result);
+        });
     });
 });
