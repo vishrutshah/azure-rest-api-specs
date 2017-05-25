@@ -126,8 +126,8 @@ console.log(swaggersToProcess);
 function runScript() {
     // Useful when debugging a test for a particular swagger. 
     // Just update the regex. That will return an array of filtered items.
-    swaggersToProcess = ['/Users/vishrut/git-repos/rest-repo-reorg/azure-rest-api-specs/arm-storage/2016-12-01/swagger/storage.json',
-                        '/Users/vishrut/git-repos/rest-repo-reorg/azure-rest-api-specs/arm-web/2016-09-01/swagger/AppServicePlans.json'];
+    // swaggersToProcess = ['/Users/vishrut/git-repos/rest-repo-reorg/azure-rest-api-specs/arm-storage/2016-12-01/swagger/storage.json',
+    //                     '/Users/vishrut/git-repos/rest-repo-reorg/azure-rest-api-specs/arm-web/2016-09-01/swagger/AppServicePlans.json'];
 
     createLogFile();
     console.log(`The results will be logged here: "${logFilepath}".`)
@@ -141,8 +141,8 @@ function runScript() {
     });
 
     executePromisesSequentially(afterPRPromiseFactories).then(() => {
-        // execSync(`${gitCheckoutCmd}`, { encoding: 'utf8' });
-        // execSync(`${gitLogCmd}`, { encoding: 'utf8' });
+        execSync(`${gitCheckoutCmd}`, { encoding: 'utf8' });
+        execSync(`${gitLogCmd}`, { encoding: 'utf8' });
         executePromisesSequentially(beforePromiseFactories).then(() => {
             writeContent(JSON.stringify(finalResult, null, 2));
             return uploadToAzureStorage();
