@@ -5,16 +5,52 @@
 
 const exec = require('child_process').exec,
     execSync = require('child_process').execSync,
+    path = require('path'),
     util = require('util'),
     utils = require('../test/util/utils'),
-    _ = require('underscore');
+    _ = require('underscore'),
+    fs = require('fs'),
+    azure = require('azure-storage');
 
+let blobService = azure.createBlobService();
 let swaggersToProcess = utils.getFilesChangedInPR();
 let targetBranch = utils.getTargetBranch();
 let sourceBranch = utils.getSourceBranch();
+let pullRequestNumber = utils.getPullRequestNumber();
 let linterCmd = `autorest --azure-arm=true --message-format=json --input-file=`;
 let gitCheckoutCmd = `git checkout ${targetBranch}`;
 let gitLogCmd = `git log -3`;
+var filename = `${pullRequestNumber}_${utils.getTimeStamp()}.json`;
+var logFilepath = path.join(getLogDir(), filename);
+var finalResult = {};
+finalResult["pr"] = pullRequestNumber;
+finalResult["repo"] = "https://github.com/Azure/azure-rest-api-specs";
+finalResult["files"] = {};
+
+function getLogDir() {
+    let logDir = path.join(__dirname, '../', 'output');
+    if (!fs.existsSync(logDir)) {
+        try {
+            fs.mkdirSync(logDir);
+        } catch (e) {
+            if (e.code !== 'EEXIST') throw e;
+        }
+    }
+    return logDir;
+}
+
+//creates the log file if it has not been created
+function createLogFile() {
+    if (!fs.existsSync(logFilepath)) {
+        fs.writeFileSync(logFilepath, '');
+    }
+    return;
+}
+
+//appends the content to the log file
+function writeContent(content) {
+    fs.writeFileSync(logFilepath, content);
+}
 
 //executes promises sequentially by chaining them.
 function executePromisesSequentially(promiseFactories) {
@@ -25,22 +61,21 @@ function executePromisesSequentially(promiseFactories) {
     return result;
 };
 
-function runTools(swagger) {
+function runTools(swagger, beforeOrAfter) {
     console.log(`Processing "${swagger}":`);
     return getLinterResult(swagger).then(function (linterErrors) {
         console.log(linterErrors);
+        updateResult(swagger, linterErrors, beforeOrAfter);
         return;
     });
 };
-
 
 function getLinterResult(swaggerPath) {
     if (swaggerPath === null || swaggerPath === undefined || typeof swaggerPath.valueOf() !== 'string' || !swaggerPath.trim().length) {
         throw new Error('swaggerPath is a required parameter of type "string" and it cannot be an empty string.');
     }
 
-    let self = this;
-    let cmd = self.linterCmd + swaggerPath;
+    let cmd = linterCmd + swaggerPath;
 
     return new Promise((result) => {
         exec(cmd, { encoding: 'utf8', maxBuffer: 1024 * 1024 * 64 }, (err, stdout, stderr) => {
@@ -65,17 +100,53 @@ function getLinterResult(swaggerPath) {
     });
 };
 
+function uploadToAzureStorage() {
+    console.log(logFilepath);
+    blobService.createBlockBlobFromLocalFile('moment-of-truth', filename, logFilepath, function (error, result, response) {
+        if (!error) {
+            console.log(error);
+        }
+    });
+}
+
+function updateResult(spec, errors, beforeOrAfter) {
+    if (!finalResult['files'][spec]) {
+        finalResult['files'][spec] = {};
+    }
+    if (!finalResult['files'][spec][beforeOrAfter]) {
+        finalResult['files'][spec][beforeOrAfter] = {};
+    }
+    finalResult['files'][spec][beforeOrAfter] = errors;
+    return;
+}
+
 console.log(swaggersToProcess);
 
 //main function
 function runScript() {
-    let promiseFactories = _(swaggersToProcess).map(function (swagger) {
-        return function () { return runTools(swagger); };
+    // Useful when debugging a test for a particular swagger. 
+    // Just update the regex. That will return an array of filtered items.
+    swaggersToProcess = ['/Users/vishrut/git-repos/rest-repo-reorg/azure-rest-api-specs/arm-storage/2016-12-01/swagger/storage.json',
+                        '/Users/vishrut/git-repos/rest-repo-reorg/azure-rest-api-specs/arm-web/2016-09-01/swagger/AppServicePlans.json'];
+
+    createLogFile();
+    console.log(`The results will be logged here: "${logFilepath}".`)
+
+    let afterPRPromiseFactories = _(swaggersToProcess).map(function (swagger) {
+        return function () { return runTools(swagger, 'after'); };
     });
-    executePromisesSequentially(promiseFactories).then(() => {
-        execSync(`${gitCheckoutCmd}`, { encoding: 'utf8' });
-        execSync(`${gitLogCmd}`, { encoding: 'utf8' });
-        return executePromisesSequentially(promiseFactories);
+
+    let beforePromiseFactories = _(swaggersToProcess).map(function (swagger) {
+        return function () { return runTools(swagger, 'before'); };
+    });
+
+    executePromisesSequentially(afterPRPromiseFactories).then(() => {
+        // execSync(`${gitCheckoutCmd}`, { encoding: 'utf8' });
+        // execSync(`${gitLogCmd}`, { encoding: 'utf8' });
+        executePromisesSequentially(beforePromiseFactories).then(() => {
+            writeContent(JSON.stringify(finalResult, null, 2));
+            return uploadToAzureStorage();
+        })
     });
 }
 
