@@ -62,12 +62,18 @@ let sourceBranch = utils.getSourceBranch();
 // });
 
 try {
+    console.log(`targetBranch = ${targetBranch} & sourceBranch = ${sourceBranch}`);
+    console.log('============== 1 ========================');
     console.log(execSync('git branch', { encoding: 'utf8' }));
     console.log(execSync('git log -3', { encoding: 'utf8' }));
-    console.log(execSync('git checkout targetBranch', { encoding: 'utf8' }));
+
+    console.log('============== 2 ========================');
+    console.log(execSync(`git checkout ${targetBranch}`, { encoding: 'utf8' }));
     console.log(execSync('git branch', { encoding: 'utf8' }));
     console.log(execSync('git log -3', { encoding: 'utf8' }));
-    console.log(execSync('git checkout sourceBranch', { encoding: 'utf8' }));
+
+    console.log('============== 3 ========================');
+    console.log(execSync(`git checkout ${sourceBranch}`, { encoding: 'utf8' }));
     console.log(execSync('git branch', { encoding: 'utf8' }));
     console.log(execSync('git log -3', { encoding: 'utf8' }));
 } catch (err) {
