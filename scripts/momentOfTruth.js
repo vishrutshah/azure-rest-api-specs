@@ -5,6 +5,7 @@
 
 const exec = require('child_process').exec,
     execSync = require('child_process').execSync,
+    util = require('util'),
     utils = require('../test/util/utils'),
     _ = require('lodash');
 
@@ -54,28 +55,27 @@ let swaggersToProcess = utils.getFilesChangedInPR();
 let targetBranch = utils.getTargetBranch();
 let sourceBranch = utils.getSourceBranch();
 
-// swaggerToProcess = [/Users/vishrut/git-repos/rest-repo-reorg/azure-rest-api-specs/arm-storage/2016-01-01/swagger/storage.json'];
-// _(swaggersToProcess).each(function (swagger) {
-//     samerIdea.getLinterResult(swagger).then((result) => {
-//         console.log(result);
-//     });
-// });
+// swaggerToProcess = ['/Users/vishrut/git-repos/rest-repo-reorg/azure-rest-api-specs/arm-storage/2016-01-01/swagger/storage.json'];
+_(swaggersToProcess).each(function (swagger) {
+    samerIdea.getLinterResult(swagger).then((result) => {
+        console.log(result);
+    });
+});
 
+// Checkout the target branch
 try {
-    console.log(`targetBranch = ${targetBranch} & sourceBranch = ${sourceBranch}`);
-    console.log('============== 1 ========================');
-    console.log(execSync('git branch', { encoding: 'utf8' }));
-    console.log(execSync('git log -3', { encoding: 'utf8' }));
-
-    console.log('============== 2 ========================');
+    console.log(`targetBranch = ${targetBranch}`);
     console.log(execSync(`git checkout ${targetBranch}`, { encoding: 'utf8' }));
     console.log(execSync('git branch', { encoding: 'utf8' }));
-    console.log(execSync('git log -3', { encoding: 'utf8' }));
-
-    console.log('============== 3 ========================');
-    console.log(execSync(`git checkout ${sourceBranch}`, { encoding: 'utf8' }));
-    console.log(execSync('git branch', { encoding: 'utf8' }));
-    console.log(execSync('git log -3', { encoding: 'utf8' }));
+    console.log(execSync('git log -2', { encoding: 'utf8' }));
 } catch (err) {
     console.log(`An error occurred while getting the current branch ${util.inspect(err, { depth: null })}.`);
 }
+
+console.log(`>>>>>>>>>>>>>>>>>>Do it again on the target branch files>>>>>>>>>>>>>>>>>>`);
+
+_(swaggersToProcess).each(function (swagger) {
+    samerIdea.getLinterResult(swagger).then((result) => {
+        console.log(result);
+    });
+});

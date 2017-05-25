@@ -107,7 +107,7 @@
         "tags": [
           "StorageAccounts"
         ],
-        "operationId": "StorageAccounts_Delete",
+        "operationId": "StorageAccounts_Hello",
         "description": "Deletes a storage account in Microsoft Azure.",
         "parameters": [
           {
