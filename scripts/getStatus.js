@@ -91,13 +91,22 @@ function runLinter(swagger) {
     console.log(`\t- Running Linter.`);
     exec(cmd, { encoding: 'utf8', maxBuffer: 1024 * 1024 * 64 }, (err, stdout, stderr) => {
       let resultObject = [];
-      if (err) {
-        console.log(`An error occurred while running the linter on ${swagger}:`);
-        console.dir(err, { depth: null, colors: true });
-      } else {
+
+      // console.log(`===================`);
+      // console.dir(`err : ${err}`);
+      // console.log(`===================`);
+      // console.dir(`stdout : ${stdout}`);
+      // console.log(`===================`);
+      // console.dir(`stderr : ${stderr}`);
+      // console.log(`===================`);
+
+      // if (err) {
+      //   console.log(`An error occurred while running the linter on ${swagger}:`);
+      //   console.dir(err, { depth: null, colors: true });
+      // } else {
         //console.log('>>>> Actual result...');
         //console.log(resultString);
-        let resultString = stdout + stderr;
+        let resultString = stderr;
         if (resultString.indexOf('{') !== -1) {
           resultString = "[" + resultString.substring(resultString.indexOf('{')).trim().replace(/\}\n\{/g, "},\n{") + "]";
           //console.log('>>>>>> Trimmed Result...');
@@ -112,7 +121,7 @@ function runLinter(swagger) {
             console.dir(e, { depth: null, colors: true });
           }
         }
-      }
+      // }
       res(resultObject);
     });
   });
@@ -133,9 +142,9 @@ function runSemanticValidator(swagger) {
 function runScript() {
   // Useful when debugging a test for a particular swagger. 
   // Just update the regex. That will return an array of filtered items.
-  // swaggersToProcess = swaggersToProcess.filter(function (item) {
-  //   return (item.match(/.*arm-network/ig) !== null);
-  // });
+  swaggersToProcess = swaggersToProcess.filter(function (item) {
+    return (item.match(/.*arm-storage\/2016-01-01/ig) !== null);
+  });
   createLogFile();
   console.log(`The results will be logged here: "${logFilepath}".`)
   let promiseFactories = _(swaggersToProcess).map(function (swagger) {
@@ -144,18 +153,27 @@ function runScript() {
   return executePromisesSequentially(promiseFactories);
 }
 
+// //runs the validation and linting tools on all the swaggers in the repo.
+// function runTools(swagger) {
+//   console.log(`Processing "${swagger}":`);
+//   return runSemanticValidator(swagger).then(function (validationErrors) {
+//     updateResult(swagger, validationErrors, true);
+//     return swagger;
+//   }).then(function (swagger) {
+//     return runLinter(swagger).then(function (linterErrors) {
+//       updateResult(swagger, linterErrors, true);
+//       //console.dir(finalResult, { depth: null, colors: true });
+//       return finalResult;
+//     });
+//   });
+// }
+
 //runs the validation and linting tools on all the swaggers in the repo.
 function runTools(swagger) {
   console.log(`Processing "${swagger}":`);
-  return runSemanticValidator(swagger).then(function (validationErrors) {
-    updateResult(swagger, validationErrors, true);
-    return swagger;
-  }).then(function (swagger) {
-    return runLinter(swagger).then(function (linterErrors) {
-      updateResult(swagger, linterErrors, true);
-      //console.dir(finalResult, { depth: null, colors: true });
-      return finalResult;
-    });
+  return runLinter(swagger).then(function (linterErrors) {
+    updateResult(swagger, linterErrors, true);
+    return finalResult;
   });
 }
 
