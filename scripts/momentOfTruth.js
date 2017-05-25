@@ -62,6 +62,7 @@ function executePromisesSequentially(promiseFactories) {
 };
 
 let samerIdea = new MomentOfTruth();
+exports.prOnly = 'true';
 let swaggersToProcess = utils.getFilesChangedInPR();
 let targetBranch = utils.getTargetBranch();
 let sourceBranch = utils.getSourceBranch();
