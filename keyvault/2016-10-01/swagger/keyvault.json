@@ -1946,6 +1946,7 @@
         }
       }
     },
+    
     "/certificates/{certificate-name}/{certificate-version}": {
       "patch": {
         "tags": [
