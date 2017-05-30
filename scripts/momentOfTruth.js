@@ -26,13 +26,7 @@ var logFilepath = path.join(getLogDir(), filename);
 var finalResult = {};
 finalResult["pullRequest"] = pullRequestNumber;
 finalResult["repositoryUrl"] = getRepository();
-finalResult["repositoryId"] = getRepositoryId();
 finalResult["files"] = {};
-
-// Retrieves Git Repository Id
-function getRepositoryId() {
-    return "56355309";
-}
 
 // Retrieves Git Repository Url
 function getRepository() {
