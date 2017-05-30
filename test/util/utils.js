@@ -113,6 +113,19 @@ exports.getPullRequestNumber = function getPullRequestNumber() {
   return result;
 };
 
+/**
+ * Gets the Repo name. We are using the environment 
+ * variable provided by travis-ci. It is called TRAVIS_REPO_SLUG. More info can be found here:
+ * https://docs.travis-ci.com/user/environment-variables/#Convenience-Variables
+ * @returns {string} PR number or 'undefined'.
+ */
+exports.getRepoName = function getRepoName() {
+  let result = process.env['TRAVIS_REPO_SLUG'];
+  console.log(`@@@@@ process.env['TRAVIS_REPO_SLUG'] - ${process.env['TRAVIS_REPO_SLUG']}`);
+
+  return result;
+};
+
 exports.getTimeStamp = function getTimeStamp() {
   // We pad each value so that sorted directory listings show the files in chronological order
   function pad(number) {

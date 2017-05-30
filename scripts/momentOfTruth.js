@@ -10,6 +10,8 @@ const exec = require('child_process').exec,
     utils = require('../test/util/utils'),
     _ = require('underscore'),
     fs = require('fs'),
+    http = require('http'),
+    HttpRequest = msRest.WebResource,
     azure = require('azure-storage');
 
 let blobService = azure.createBlobService();
@@ -23,10 +25,22 @@ let gitLogCmd = `git log -3`;
 var filename = `${pullRequestNumber}_${utils.getTimeStamp()}.json`;
 var logFilepath = path.join(getLogDir(), filename);
 var finalResult = {};
-finalResult["pr"] = pullRequestNumber;
-finalResult["repo"] = "https://github.com/Azure/azure-rest-api-specs";
+finalResult["pullRequest"] = pullRequestNumber;
+finalResult["repository"] = getRepository();
+finalResult["repositoryId"] = getRepositoryId();
 finalResult["files"] = {};
 
+// Retrieves Git Repository Id
+function getRepositoryId() {
+    return "56355309";
+}
+
+// Retrieves Git Repository Url
+function getRepository() {
+    return "https://github.com/" + utils.getRepoName();
+}
+
+// Creates and returns path to the logging directory
 function getLogDir() {
     let logDir = path.join(__dirname, '../', 'output');
     if (!fs.existsSync(logDir)) {
@@ -61,22 +75,13 @@ function executePromisesSequentially(promiseFactories) {
     return result;
 };
 
-function runTools(swagger, beforeOrAfter) {
-    console.log(`Processing "${swagger}":`);
-    return getLinterResult(swagger).then(function (linterErrors) {
-        console.log(linterErrors);
-        updateResult(swagger, linterErrors, beforeOrAfter);
-        return;
-    });
-};
-
+// Executes linter on given swagger path and returns structured JSON of linter output
 function getLinterResult(swaggerPath) {
     if (swaggerPath === null || swaggerPath === undefined || typeof swaggerPath.valueOf() !== 'string' || !swaggerPath.trim().length) {
         throw new Error('swaggerPath is a required parameter of type "string" and it cannot be an empty string.');
     }
 
     let cmd = linterCmd + swaggerPath;
-
     return new Promise((result) => {
         exec(cmd, { encoding: 'utf8', maxBuffer: 1024 * 1024 * 64 }, (err, stdout, stderr) => {
             let jsonResult = [];
@@ -100,6 +105,7 @@ function getLinterResult(swaggerPath) {
     });
 };
 
+// Uploads the result file to Azure Blob Storage
 function uploadToAzureStorage() {
     console.log(logFilepath);
     blobService.createBlockBlobFromLocalFile('moment-of-truth', filename, logFilepath, function (error, result, response) {
@@ -109,6 +115,17 @@ function uploadToAzureStorage() {
     });
 }
 
+// Run linter tool
+function runTools(swagger, beforeOrAfter) {
+    console.log(`Processing "${swagger}":`);
+    return getLinterResult(swagger).then(function (linterErrors) {
+        console.log(linterErrors);
+        updateResult(swagger, linterErrors, beforeOrAfter);
+        return;
+    });
+};
+
+// Updates final result json to be written to the output file
 function updateResult(spec, errors, beforeOrAfter) {
     if (!finalResult['files'][spec]) {
         finalResult['files'][spec] = {};
@@ -120,15 +137,13 @@ function updateResult(spec, errors, beforeOrAfter) {
     return;
 }
 
-console.log(swaggersToProcess);
-
 //main function
 function runScript() {
     // Useful when debugging a test for a particular swagger. 
     // Just update the regex. That will return an array of filtered items.
     // swaggersToProcess = ['/Users/vishrut/git-repos/rest-repo-reorg/azure-rest-api-specs/arm-storage/2016-12-01/swagger/storage.json',
     //                     '/Users/vishrut/git-repos/rest-repo-reorg/azure-rest-api-specs/arm-web/2016-09-01/swagger/AppServicePlans.json'];
-
+    console.log(swaggersToProcess);
     createLogFile();
     console.log(`The results will be logged here: "${logFilepath}".`)
 
@@ -150,4 +165,5 @@ function runScript() {
     });
 }
 
+// magic starts here
 runScript();
