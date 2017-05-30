@@ -11,7 +11,6 @@ const exec = require('child_process').exec,
     _ = require('underscore'),
     fs = require('fs'),
     http = require('http'),
-    HttpRequest = msRest.WebResource,
     azure = require('azure-storage');
 
 let blobService = azure.createBlobService();
