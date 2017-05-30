@@ -25,7 +25,7 @@ var filename = `${pullRequestNumber}_${utils.getTimeStamp()}.json`;
 var logFilepath = path.join(getLogDir(), filename);
 var finalResult = {};
 finalResult["pullRequest"] = pullRequestNumber;
-finalResult["repository"] = getRepository();
+finalResult["repositoryUrl"] = getRepository();
 finalResult["repositoryId"] = getRepositoryId();
 finalResult["files"] = {};
 
