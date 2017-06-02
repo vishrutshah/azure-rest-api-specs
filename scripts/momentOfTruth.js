@@ -10,10 +10,10 @@ const exec = require('child_process').exec,
     utils = require('../test/util/utils'),
     _ = require('underscore'),
     fs = require('fs'),
-    http = require('http'),
-    azure = require('azure-storage');
+    request = require('request');
+    // azure = require('azure-storage');
 
-let blobService = azure.createBlobService();
+// let blobService = azure.createBlobService();
 let swaggersToProcess = utils.getFilesChangedInPR();
 let targetBranch = utils.getTargetBranch();
 let sourceBranch = utils.getSourceBranch();
@@ -99,12 +99,20 @@ function getLinterResult(swaggerPath) {
 };
 
 // Uploads the result file to Azure Blob Storage
-function uploadToAzureStorage() {
+function uploadToAzureStorage(json) {
     console.log(logFilepath);
-    blobService.createBlockBlobFromLocalFile('moment-of-truth', filename, logFilepath, function (error, result, response) {
-        if (!error) {
-            console.log(error);
-        }
+    // blobService.createBlockBlobFromLocalFile('moment-of-truth', filename, logFilepath, function (error, result, response) {
+    //     if (!error) {
+    //         console.log(error);
+    //     }
+    // });
+    request({
+       url: "http://az-bot.azurewebsites.net/process",
+       method: "POST",
+       json: true,
+       body: json 
+    }, function(error, response, body) {
+        console.log(response);
     });
 }
 
@@ -153,7 +161,7 @@ function runScript() {
         execSync(`${gitLogCmd}`, { encoding: 'utf8' });
         executePromisesSequentially(beforePromiseFactories).then(() => {
             writeContent(JSON.stringify(finalResult, null, 2));
-            return uploadToAzureStorage();
+            return uploadToAzureStorage(finalResult);
         })
     });
 }
