@@ -112,7 +112,7 @@ function uploadToAzureStorage(json) {
        json: true,
        body: json 
     }, function(error, response, body) {
-        console.log(response);
+        console.log(body);
     });
 }
 
