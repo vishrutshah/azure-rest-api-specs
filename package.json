@@ -19,7 +19,7 @@
     "oav": "^0.4.1",
     "js-yaml": "^3.8.2",
     "azure-storage": "^2.1.0",
-    "oad": "^0.1.6"
+    "oad": "vishrutshah/openapi-diff#chain-result"
   },
   "homepage": "https://github.com/azure/azure-rest-api-specs",
   "repository": {

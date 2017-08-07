@@ -37,7 +37,11 @@ function runOad(oldSpec, newSpec) {
   console.log(`New Spec: "${newSpec}"`);
   console.log(`>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>`);
 
-  return Promise.resolve(oad.compare(oldSpec, newSpec, { consoleLogLevel: 'warn', json: true }));
+  return Promise.resolve(oad.compare(oldSpec, newSpec, { consoleLogLevel: 'warn', json: true }).then((result, err) => {
+    if (result.indexOf(`"type": "Error"`) > -1) {
+      process.exitCode = 1;
+    }
+  }));
 }
 
 /**
